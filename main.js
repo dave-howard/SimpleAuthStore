@@ -17,10 +17,19 @@ async function makeApiRequest(endpoint, body) {
             body: JSON.stringify(body)
         });
         
-        const data = await response.json();
+        let data;
+        try {
+            data = await response.json();
+        } catch (error) {
+            // If JSON parsing fails, create a default error response
+            data = {
+                error: `HTTP ${response.status}: ${response.statusText}`,
+                data: null
+            };
+        }
         
         if (!response.ok) {
-            throw new Error(data.error || `API request to ${endpoint} failed`);
+            throw new Error(data.error || `API request to ${endpoint} failed with status ${response.status}`);
         }
         
         return data.data;
@@ -35,9 +44,7 @@ async function makeApiRequest(endpoint, body) {
  * @returns {Promise<string>} session_id
  * @throws {Error} If username or password is missing, or if signup fails
  */
-async function signup() {
-    const username = document.getElementById("signup_username").value;
-    const password = document.getElementById("signup_password").value;
+async function signup(username, password) {
     
     if (!username || !password) {
         throw new Error('Username and password are required for signup');
@@ -51,9 +58,7 @@ async function signup() {
  * @returns {Promise<string>} session_id
  * @throws {Error} If username or password is missing, or if login fails
  */
-async function login() {
-    const username = document.getElementById("login_username").value;
-    const password = document.getElementById("login_password").value;
+async function login(username, password) {
     
     if (!username || !password) {
         throw new Error('Username and password are required for login');
@@ -68,12 +73,11 @@ async function login() {
  * @returns {Promise<Object>} User data
  * @throws {Error} If session_id is missing or if read fails
  */
-async function read_user(session_id) {
+async function read_user(username,session_id) {
     if (!session_id) {
         throw new Error('Session ID is required to read user data');
     }
 
-    const username = document.getElementById("read_user_username").value;
     if (!username) {
         throw new Error('Username is required to read user data');
     }
