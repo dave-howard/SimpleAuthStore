@@ -266,5 +266,3 @@ async function manage_access(session_id, subject_user_id, shared_item_id, action
         action
     });
 }
-
-
